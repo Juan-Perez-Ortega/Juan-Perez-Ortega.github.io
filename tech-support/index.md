@@ -1,10 +1,14 @@
-# Máquina TECH_SUPP0RT:1
+﻿---
+layout: default
+---
 
-## 8. Explotación de Sudoers: /usr/bin/icon (ROOT)
+# MÃ¡quina TECH_SUPP0RT:1
 
-El binario `icon` es ejecutable como root sin contraseña. Esto permite aprovecharlo para ejecutar comandos con privilegios elevados.
+## 8. ExplotaciÃ³n de Sudoers: /usr/bin/icon (ROOT)
 
-### 8.1. Confirmación de permisos
+El binario `icon` es ejecutable como root sin contraseÃ±a. Esto permite aprovecharlo para ejecutar comandos con privilegios elevados.
+
+### 8.1. ConfirmaciÃ³n de permisos
 
 **Comando:**
 
@@ -12,7 +16,7 @@ El binario `icon` es ejecutable como root sin contraseña. Esto permite aprovech
 
 ### 8.2. Referencia (GTFOBins)
 
-`icon` pertenece a ImageMagick. Si está permitido por `sudoers`, se puede forzar ejecución de comandos.
+`icon` pertenece a ImageMagick. Si estÃ¡ permitido por `sudoers`, se puede forzar ejecuciÃ³n de comandos.
 
 ### 8.3. Escalada a root (shell)
 
@@ -24,15 +28,15 @@ El binario `icon` es ejecutable como root sin contraseña. Esto permite aprovech
     
     `sudo /usr/bin/icon -help`
     
-    Si el binario permite ejecutar comandos (depende de la versión/compilación), prueba con una ejecución directa de shell desde la funcionalidad de delegación:
+    Si el binario permite ejecutar comandos (depende de la versiÃ³n/compilaciÃ³n), prueba con una ejecuciÃ³n directa de shell desde la funcionalidad de delegaciÃ³n:
     
     - `sudo /usr/bin/icon -e 'system("/bin/bash -p");'`\
     - o bien una reverse shell adaptando tu IP/puerto.
 
-> Nota: la sintaxis exacta puede variar. Si este paso falla, revisa la ayuda (`icon -h`, `icon -help`) y valida versión (`icon -version`).
+> Nota: la sintaxis exacta puede variar. Si este paso falla, revisa la ayuda (`icon -h`, `icon -help`) y valida versiÃ³n (`icon -version`).
 > 
 
-### 8.4. Verificación de privilegios
+### 8.4. VerificaciÃ³n de privilegios
 
 **Comandos:**
 
@@ -51,15 +55,15 @@ Una vez como `root`, localiza la flag:
 
 ## 9. Resumen de la Ruta de Ataque
 
-- Reconocimiento: Nmap + enumeración web.
+- Reconocimiento: Nmap + enumeraciÃ³n web.
 - Acceso inicial: SMB (share `websvr`) + credenciales Subrion.
 - RCE: File upload en Subrion CMS 4.2.1.
-- Movimiento/estabilización: SSH como `scamsite`.
-- Escalada: `sudo` sin contraseña sobre `/usr/bin/icon`.
+- Movimiento/estabilizaciÃ³n: SSH como `scamsite`.
+- Escalada: `sudo` sin contraseÃ±a sobre `/usr/bin/icon`.
 
-## 1. Fase de Reconocimiento (Enumeración de Puertos)
+## 1. Fase de Reconocimiento (EnumeraciÃ³n de Puertos)
 
-Empezamos lanzando un escaneo de puertos para ver qué servicios están corriendo en la IP de la máquina.
+Empezamos lanzando un escaneo de puertos para ver quÃ© servicios estÃ¡n corriendo en la IP de la mÃ¡quina.
 
 ### Escaneo de Puertos (Nmap)
 
@@ -71,7 +75,7 @@ nmap -sV -sC -p- 10.80.156.20
 
 ###
 
-### Enumeración de Directorios Web
+### EnumeraciÃ³n de Directorios Web
 
 Utilizamos `gobuster` para realizar fuerza bruta de directorios en el servidor web:
 
@@ -81,7 +85,7 @@ Bash
 
 ![image.png](image%201.png)
 
-### Enumeración de SMB
+### EnumeraciÃ³n de SMB
 
 Al detectar el puerto 445 abierto, listamos los recursos compartidos:
 
@@ -94,23 +98,23 @@ Bash
 
 ![image.png](image%202.png)
 
-## 2. Explotación de SMB
+## 2. ExplotaciÃ³n de SMB
 
-Ahora, **lo que tienes que hacer a continuación** es entrar en esa carpeta y ver qué hay dentro. Ejecuta este comando en tu terminal:
+Ahora, **lo que tienes que hacer a continuaciÃ³n** es entrar en esa carpeta y ver quÃ© hay dentro. Ejecuta este comando en tu terminal:
 
 Bash
 
 `smbclient //10.80.156.20/websvr -N`
 
-Una vez dentro (verás el prompt `smb: \>`), escribe:
+Una vez dentro (verÃ¡s el prompt `smb: \>`), escribe:
 
 1. `ls` (para ver los archivos).
-2. `get enter.txt` (para descargar el archivo que suele estar ahí).
+2. `get enter.txt` (para descargar el archivo que suele estar ahÃ­).
 3. `exit` (para salir).
 
 ![image.png](image%203.png)
 
-### Análisis del archivo `enter.txt`:
+### AnÃ¡lisis del archivo `enter.txt`:
 
 Al revisar el contenido con `cat enter.txt`, obtenemos pistas fundamentales para el siguiente paso:
 
@@ -122,33 +126,33 @@ Al revisar el contenido con `cat enter.txt`, obtenemos pistas fundamentales para
     ![image.png](image%204.png)
     
 
-### Descifrando la "Fórmula Mágica"
+### Descifrando la "FÃ³rmula MÃ¡gica"
 
-La contraseña encontrada en el SMB (`7sKvntXdPEJaxazce9PXi24zaFrLiKWCk`) no es un Base64 simple. Utilizamos **CyberChef** con la función **Magic** para analizarla.
+La contraseÃ±a encontrada en el SMB (`7sKvntXdPEJaxazce9PXi24zaFrLiKWCk`) no es un Base64 simple. Utilizamos **CyberChef** con la funciÃ³n **Magic** para analizarla.
 
 - **Cadena original:** `7sKvntXdPEJaxazce9PXi24zaFrLiKWCk`
-- **Proceso:** La herramienta detecta una codificación múltiple (Base58 -> Base32 -> Base64).
+- **Proceso:** La herramienta detecta una codificaciÃ³n mÃºltiple (Base58 -> Base32 -> Base64).
 - **Resultado:** `Scam2021`
 
 ![image.png](image%205.png)
 
-### Intrusión: Subrion Admin Panel
+### IntrusiÃ³n: Subrion Admin Panel
 
-Con las credenciales legítimas descubiertas, procedemos a explotar el panel de administración del CMS.
+Con las credenciales legÃ­timas descubiertas, procedemos a explotar el panel de administraciÃ³n del CMS.
 
 - **URL de acceso:** `http://10.80.156.20/subrion/panel/`
 - **Usuario:** `admin`
-- **Contraseña:** `Scam2021`
+- **ContraseÃ±a:** `Scam2021`
 
 ![image.png](image%206.png)
 
-### 5. Explotación: Subida de Shell y RCE (Minuto 11:00)
+### 5. ExplotaciÃ³n: Subida de Shell y RCE (Minuto 11:00)
 
 Una vez dentro del Dashboard de **Subrion CMS v4.2.1**, aprovechamos una vulnerabilidad conocida de subida de archivos para obtener una shell reversa.
 
 ![image.png](image%207.png)
 
-### Búsqueda con Searchsploit
+### BÃºsqueda con Searchsploit
 
 Utilizamos `searchsploit` para buscar vectores de ataque contra **Subrion CMS**:
 
@@ -164,7 +168,7 @@ Bash
 
 ![image.png](image%208.png)
 
-### Paso a seguir (Ejecución):
+### Paso a seguir (EjecuciÃ³n):
 
 Ahora tienes que traerte ese script a tu carpeta actual para ejecutarlo. Sigue estos comandos en tu Kali:
 
@@ -184,11 +188,11 @@ Bash
 
 ![image.png](image%2010.png)
 
-### 6. Post-Explotación y Movimiento Lateral
+### 6. Post-ExplotaciÃ³n y Movimiento Lateral
 
 Tras obtener acceso como `www-data`, inspeccionamos los usuarios del sistema para identificar posibles objetivos de escalada.
 
-### Enumeración de Usuarios
+### EnumeraciÃ³n de Usuarios
 
 Ejecutamos `cat /etc/passwd` y localizamos al usuario objetivo:
 
@@ -202,21 +206,21 @@ Vemos que el archivo es leible
 
 ![image.png](image%2012.png)
 
-Con el comando GREP obtenemos la contrasñea 
+Con el comando GREP obtenemos la contrasÃ±ea 
 
 ![image.png](image%2013.png)
 
-### 6.1. Acceso mediante SSH (Estabilización Definitiva)
+### 6.1. Acceso mediante SSH (EstabilizaciÃ³n Definitiva)
 
-Debido a que la shell obtenida por el exploit de Subrion es limitada e inestable, procedemos a utilizar las credenciales encontradas (`scamsite : ImAScammerLOL!123!`) para conectar vía **SSH**. Esto nos proporciona una sesión de terminal completa y persistente.
+Debido a que la shell obtenida por el exploit de Subrion es limitada e inestable, procedemos a utilizar las credenciales encontradas (`scamsite : ImAScammerLOL!123!`) para conectar vÃ­a **SSH**. Esto nos proporciona una sesiÃ³n de terminal completa y persistente.
 
-**Comando de conexión:**
+**Comando de conexiÃ³n:**
 
 Bash
 
 `ssh scamsite@10.80.156.20`
 
-### Recolección de la Flag de Usuario
+### RecolecciÃ³n de la Flag de Usuario
 
 Una vez dentro del sistema como `scamsite`, localizamos la primera flag en el directorio personal del usuario:
 
@@ -226,7 +230,7 @@ Una vez dentro del sistema como `scamsite`, localizamos la primera flag en el di
 
 ### Vulnerabilidad de Sudoers
 
-Al ejecutar `sudo -l`, identificamos una configuración permisiva en el archivo sudoers:
+Al ejecutar `sudo -l`, identificamos una configuraciÃ³n permisiva en el archivo sudoers:
 `(ALL) NOPASSWD: /usr/bin/icon`
 
 ![image.png](image%2015.png)
