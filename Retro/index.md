@@ -1,12 +1,12 @@
-﻿---
+---
 layout: default
 ---
 
-# MÃ¡quina RETRO
+# Máquina RETRO
 
-### Reconocimiento y EnumeraciÃ³n de Puertos
+### Reconocimiento y Enumeración de Puertos
 
-El objetivo inicial es identificar los servicios activos y las versiones de software que se ejecutan en la mÃ¡quina vÃ­ctima.
+El objetivo inicial es identificar los servicios activos y las versiones de software que se ejecutan en la máquina víctima.
 
 - **Comando de escaneo (Nmap):**
 
@@ -23,7 +23,7 @@ nmap -sV -sC -Pn 10.81.190.233<br>
 
 ### 1.1. Fuzzing de Directorios con Gobuster
 
-Se utiliza la herramienta **Gobuster** con un diccionario de fuerza bruta de tamaÃ±o medio para identificar subdirectorios en el servidor web IIS.
+Se utiliza la herramienta **Gobuster** con un diccionario de fuerza bruta de tamaño medio para identificar subdirectorios en el servidor web IIS.
 
 - **Comando ejecutado:**Bash
     
@@ -31,8 +31,8 @@ Se utiliza la herramienta **Gobuster** con un diccionario de fuerza bruta de tam
     gobuster dir -u http://10.10.13.117 -w /usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt
     ```
     
-- **AnÃ¡lisis del resultado:**
-Se identifica un directorio crÃ­tico con estado **301 (RedirecciÃ³n)**:
+- **Análisis del resultado:**
+Se identifica un directorio crítico con estado **301 (Redirección)**:
     - **Ruta:** `/retro`
 
 ![image.png](image%201.png)
@@ -51,7 +51,7 @@ Accedemos a internet para ver cual es el avatar
 
 ### Fuzzing en el Directorio /retro
 
-Para verificar si hay paneles de administraciÃ³n (como el de WordPress) o archivos ocultos dentro de esa carpeta, ejecutamos el siguiente comando:
+Para verificar si hay paneles de administración (como el de WordPress) o archivos ocultos dentro de esa carpeta, ejecutamos el siguiente comando:
 
 **Comando de Gobuster:**
 
@@ -63,18 +63,18 @@ gobuster dir -u http://10.81.190.233/retro/ -w /usr/share/wordlists/dirb/common.
 
 ![image.png](image%205.png)
 
-- **Hallazgo:** Se identifica el directorio `/wp-admin`, estÃ¡ndar para la gestiÃ³n de sitios **WordPress**.
+- **Hallazgo:** Se identifica el directorio `/wp-admin`, estándar para la gestión de sitios **WordPress**.
 
-### Fase 3: Acceso Inicial y ExplotaciÃ³n Web
+### Fase 3: Acceso Inicial y Explotación Web
 
-Con el panel de control localizado y las credenciales deducidas anteriormente, se procede al compromiso de la aplicaciÃ³n web.
+Con el panel de control localizado y las credenciales deducidas anteriormente, se procede al compromiso de la aplicación web.
 
-### 3.1. AutenticaciÃ³n en WordPress
+### 3.1. Autenticación en WordPress
 
 Se accede a la URL `http://10.81.190.233/retro/wp-login.php` para validar el acceso.
 
 - **Usuario:** `wade`
-- **ContraseÃ±a:** `parzival` (obtenida tras la investigaciÃ³n del avatar del usuario).
+- **Contraseña:** `parzival` (obtenida tras la investigación del avatar del usuario).
 
 ![image.png](image%206.png)
 
@@ -104,7 +104,7 @@ xfreerdp /u:wade /p:parzival /v:10.81.190.233
 
 Una vez obtenido el acceso como el usuario `Wade`, el objetivo es elevar privilegios hasta el nivel de **NT AUTHORITY\SYSTEM**.
 
-### 5.1. EnumeraciÃ³n Post-ExplotaciÃ³n
+### 5.1. Enumeración Post-Explotación
 
 Al revisar el sistema en busca de vectores de escalada, se inspecciona la **Papelera de Reciclaje** (Recycle Bin), donde se localiza un archivo sospechoso:
 
@@ -112,9 +112,9 @@ Al revisar el sistema en busca de vectores de escalada, se inspecciona la **Pape
 
 ![image.png](image%2011.png)
 
-### 5.2. ExplotaciÃ³n del CVE-2019-1388 (Paso a Paso)
+### 5.2. Explotación del CVE-2019-1388 (Paso a Paso)
 
-Para convertirnos en Administrador, seguimos estos pasos dentro de la sesiÃ³n RDP:
+Para convertirnos en Administrador, seguimos estos pasos dentro de la sesión RDP:
 
 1. **Restaurar el archivo:** Sacamos `hhupd.exe` de la papelera al escritorio.
 2. **Ejecutar como Administrador:** Hacemos clic derecho y seleccionamos **"Run as administrator"**.
@@ -142,7 +142,7 @@ Bash
 
 ### 2. Descarga en el Objetivo (Windows)
 
-Desde el navegador Chrome de la vÃ­ctima, has accedido a tu IP. Al hacer clic en el archivo `.exe`, Windows lo descarga en la carpeta de usuario (`C:\Users\Wade\Downloads`).
+Desde el navegador Chrome de la víctima, has accedido a tu IP. Al hacer clic en el archivo `.exe`, Windows lo descarga en la carpeta de usuario (`C:\Users\Wade\Downloads`).
 
 ![image.png](image%2014.png)
 
