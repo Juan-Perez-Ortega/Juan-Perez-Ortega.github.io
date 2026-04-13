@@ -74,7 +74,7 @@ Empezamos lanzando un escaneo de puertos para ver qué servicios están corriend
 
 nmap -sV -sC -p- 10.80.156.20 
 
-![image.png](image.png)
+![image.png](/linux/tech-support/image.png)
 
 ###
 
@@ -86,7 +86,7 @@ Bash
 
 `gobuster dir -u http://10.80.156.20 -w /usr/share/wordlists/dirb/common.txt`
 
-![image.png](image%201.png)
+![image.png](/linux/tech-support/image%201.png)
 
 ### Enumeración de SMB
 
@@ -99,7 +99,7 @@ Bash
 > **Resultado:** Identificamos un recurso compartido llamado `websvr`.
 > 
 
-![image.png](image%202.png)
+![image.png](/linux/tech-support/image%202.png)
 
 ## 2. Explotación de SMB
 
@@ -115,7 +115,7 @@ Una vez dentro (verás el prompt `smb: \>`), escribe:
 2. `get enter.txt` (para descargar el archivo que suele estar ahí).
 3. `exit` (para salir).
 
-![image.png](image%203.png)
+![image.png](/linux/tech-support/image%203.png)
 
 ### Análisis del archivo `enter.txt`:
 
@@ -126,7 +126,7 @@ Al revisar el contenido con `cat enter.txt`, obtenemos pistas fundamentales para
     - **Password:** `7sKvntXdPEJaxazce9PXi24zaFrLiKWCk`
     - 
     
-    ![image.png](image%204.png)
+    ![image.png](/linux/tech-support/image%204.png)
     
 
 ### Descifrando la "Fórmula Mágica"
@@ -137,7 +137,7 @@ La contraseña encontrada en el SMB (`7sKvntXdPEJaxazce9PXi24zaFrLiKWCk`) no es 
 - **Proceso:** La herramienta detecta una codificación múltiple (Base58 -> Base32 -> Base64).
 - **Resultado:** `Scam2021`
 
-![image.png](image%205.png)
+![image.png](/linux/tech-support/image%205.png)
 
 ### Intrusión: Subrion Admin Panel
 
@@ -147,13 +147,13 @@ Con las credenciales legítimas descubiertas, procedemos a explotar el panel de 
 - **Usuario:** `admin`
 - **Contraseña:** `Scam2021`
 
-![image.png](image%206.png)
+![image.png](/linux/tech-support/image%206.png)
 
 ### 5. Explotación: Subida de Shell y RCE (Minuto 11:00)
 
 Una vez dentro del Dashboard de **Subrion CMS v4.2.1**, aprovechamos una vulnerabilidad conocida de subida de archivos para obtener una shell reversa.
 
-![image.png](image%207.png)
+![image.png](/linux/tech-support/image%207.png)
 
 ### Búsqueda con Searchsploit
 
@@ -169,7 +169,7 @@ Bash
 - **Exploit seleccionado:** `Subrion CMS 4.2.1 - Arbitrary File Upload`.
 - **ID de Exploit:** `php/webapps/49876.py`.
 
-![image.png](image%238.png)
+![image.png](/linux/tech-support/image%238.png)
 
 ### Paso a seguir (Ejecución):
 
@@ -180,7 +180,7 @@ Ahora tienes que traerte ese script a tu carpeta actual para ejecutarlo. Sigue e
     `searchsploit -m 49876`
     
 
-![image.png](image%239.png)
+![image.png](/linux/tech-support/image%239.png)
 
 **Ejecuta el exploit:**
 Obtenemos la url del panel al cual accedimos antes 
@@ -189,7 +189,7 @@ Bash
 
 `python3 49876.py -u http://10.80.156.20/subrion/panel/ -l admin -p Scam2021`
 
-![image.png](image%2010.png)
+![image.png](/linux/tech-support/image%2010.png)
 
 ### 6. Post-Explotación y Movimiento Lateral
 
@@ -203,15 +203,15 @@ Ejecutamos `cat /etc/passwd` y localizamos al usuario objetivo:
 - **Home:** `/home/scamsite`
 - **Shell:** `/bin/bash`
 
-![image.png](image%2011.png)
+![image.png](/linux/tech-support/image%2011.png)
 
 Vemos que el archivo es leible 
 
-![image.png](image%2012.png)
+![image.png](/linux/tech-support/image%2012.png)
 
 Con el comando GREP obtenemos la contrasñea 
 
-![image.png](image%2013.png)
+![image.png](/linux/tech-support/image%2013.png)
 
 ### 6.1. Acceso mediante SSH (Estabilización Definitiva)
 
@@ -227,7 +227,7 @@ Bash
 
 Una vez dentro del sistema como `scamsite`, localizamos la primera flag en el directorio personal del usuario:
 
-![image.png](image%2014.png)
+![image.png](/linux/tech-support/image%2014.png)
 
 ### 7. Escalada de Privilegios: De scamsite a ROOT
 
@@ -236,4 +236,4 @@ Una vez dentro del sistema como `scamsite`, localizamos la primera flag en el di
 Al ejecutar `sudo -l`, identificamos una configuración permisiva en el archivo sudoers:
 `(ALL) NOPASSWD: /usr/bin/icon`
 
-![image.png](image%2015.png)
+![image.png](/linux/tech-support/image%2015.png)
