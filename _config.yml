@@ -1,3 +1,32 @@
-title: Portfolio de Ciberseguridad | Juan Pérez Ortega
-description: Bienvenido a mi repositorio de resolución de máquinas vulnerables. Contenido estrictamente educativo.
-theme: jekyll-theme-hacker
+remote_theme: cotes2020/jekyll-theme-chirpy
+
+lang: es
+timezone: Europe/Madrid
+
+title: Portfolio de Ciberseguridad
+tagline: Writeups de máquinas vulnerables
+description: Resolución de máquinas vulnerables. Contenido educativo.
+
+url: "https://juan-perez-ortega.github.io"
+
+github:
+  username: Juan-Perez-Ortega
+
+theme_mode: dark
+
+paginate: 10
+
+toc: true
+
+collections:
+  tabs:
+    output: true
+    sort_by: order
+
+defaults:
+  - scope:
+      path: ""
+      type: tabs
+    values:
+      layout: page
+      permalink: /:title/
