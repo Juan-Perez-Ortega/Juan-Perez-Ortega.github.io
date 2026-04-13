@@ -27,6 +27,7 @@ plugins:
   - jekyll-seo-tag
   - jekyll-archives
   - jekyll-sitemap
+  - jekyll-include-cache
 
 jekyll-archives:
   enabled:
