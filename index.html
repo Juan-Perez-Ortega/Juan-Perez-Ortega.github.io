@@ -1,3 +1,17 @@
 ---
-layout: home
+layout: default
 ---
+
+# Writeups de Ciberseguridad
+
+Aquí encontrarás una colección de writeups de máquinas resueltas.
+
+<ul>
+  {% for post in site.posts %}
+    <li>
+      <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
+      <br>
+      <small>{{ post.date | date: "%Y-%m-%d" }}</small>
+    </li>
+  {% endfor %}
+</ul>

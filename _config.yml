@@ -15,35 +15,15 @@ social:
   links:
     - https://github.com/Juan-Perez-Ortega
 
-theme_mode: dark
+theme: jekyll-theme-hacker
 
 paginate: 10
-
-toc: true
 
 plugins:
   - jekyll-paginate
   - jekyll-redirect-from
   - jekyll-seo-tag
-  - jekyll-archives
   - jekyll-sitemap
-  - jekyll-include-cache
-
-jekyll-archives:
-  enabled:
-    - categories
-    - tags
-  layouts:
-    category: category
-    tag: tag
-  permalinks:
-    tag: /tags/:name/
-    category: /categories/:name/
-
-collections:
-  tabs:
-    output: true
-    sort_by: order
 
 defaults:
   - scope:
@@ -52,14 +32,10 @@ defaults:
     values:
       layout: post
       comments: false
-      toc: true
       permalink: /posts/:title/
   - scope:
       path: ""
-      type: tabs
+      type: pages
     values:
-      layout: page
-      permalink: /:title/
+      layout: default
 
-sass:
-  style: compressed
