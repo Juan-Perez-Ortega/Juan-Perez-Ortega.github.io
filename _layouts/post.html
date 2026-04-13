@@ -1,0 +1,20 @@
+---
+layout: default
+---
+
+{% assign os = page.categories[0] | downcase %}
+{% assign machine_name = page.title | split: " - " | first %}
+
+<!-- Breadcrumbs -->
+<nav class="breadcrumbs">
+  <a href="{{ '/' | relative_url }}">INICIO</a>
+  <span class="separator">&gt;</span>
+  <a href="{{ '/' | relative_url }}" onclick="setTimeout(function(){ filterOS('{{ os }}') }, 100)">{{ os | upcase }}</a>
+  <span class="separator">&gt;</span>
+  <span class="current">{{ machine_name | upcase }}</span>
+</nav>
+
+<!-- Folio de Investigación -->
+<article class="writeup-folio">
+  {{ content }}
+</article>

@@ -2,12 +2,35 @@
 layout: default
 ---
 
+<!-- Selector de SO — Dual Boot -->
+<div class="os-selector">
+  <div class="os-card active" data-os="all" onclick="filterOS('all')">
+    <span class="os-icon">&#128123;</span>
+    <h2 class="os-card-title">ALL SYSTEMS</h2>
+    <p class="os-card-sub">todas las máquinas</p>
+    <span class="os-card-count">{{ site.posts | size }} targets</span>
+  </div>
+  <div class="os-card" data-os="linux" onclick="filterOS('linux')">
+    <span class="os-icon">&#128039;</span>
+    <h2 class="os-card-title">KALI LINUX</h2>
+    <p class="os-card-sub">entorno linux</p>
+    <span class="os-card-count">{% assign linux_count = 0 %}{% for post in site.posts %}{% assign os = post.categories[0] | downcase %}{% if os == "linux" %}{% assign linux_count = linux_count | plus: 1 %}{% endif %}{% endfor %}{{ linux_count }} targets</span>
+  </div>
+  <div class="os-card" data-os="windows" onclick="filterOS('windows')">
+    <span class="os-icon">&#128187;</span>
+    <h2 class="os-card-title">WINDOWS</h2>
+    <p class="os-card-sub">entorno windows</p>
+    <span class="os-card-count">{% assign win_count = 0 %}{% for post in site.posts %}{% assign os = post.categories[0] | downcase %}{% if os == "windows" %}{% assign win_count = win_count | plus: 1 %}{% endif %}{% endfor %}{{ win_count }} targets</span>
+  </div>
+</div>
+
+<!-- Grid de máquinas -->
 <div class="cards-grid">
   {% for post in site.posts %}
     {% assign os = post.categories[0] | downcase %}
     {% assign difficulty = post.categories[1] %}
     {% assign machine_name = post.title | split: " - " | first %}
-    <div class="card">
+    <div class="card" data-os="{{ os }}">
       <a href="{{ site.baseurl }}{{ post.url }}">
         <img class="card-img" src="{{ post.image }}" alt="{{ machine_name }}">
         <div class="card-body">
@@ -26,3 +49,22 @@ layout: default
     </div>
   {% endfor %}
 </div>
+
+<script>
+function filterOS(os) {
+  document.querySelectorAll('.os-card').forEach(function(card) {
+    card.classList.remove('active');
+    if (card.getAttribute('data-os') === os) {
+      card.classList.add('active');
+    }
+  });
+
+  document.querySelectorAll('.card').forEach(function(card) {
+    if (os === 'all' || card.getAttribute('data-os') === os) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+</script>
