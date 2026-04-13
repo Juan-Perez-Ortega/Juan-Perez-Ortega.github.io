@@ -13,11 +13,11 @@ Selecciona la máquina que quieras consultar de la siguiente tabla. Cada *write-
 
 | 🖥️ Máquina | 📊 Nivel Estimado | 🔗 Enlace al Write-up |
 | :--- | :---: | :---: |
-| 🛡️ **Anthem** | 🟢 Fácil | [**📄 Ver Documento**](Anthem/) |
-| 🛡️ **Blaster** | 🟢 Fácil | [**📄 Ver Documento**](Blaster/) |
-| 🛡️ **Blue** | 🟢 Fácil | [**📄 Ver Documento**](Blue/) |
-| 🛡️ **Ice** | 🟢 Fácil | [**📄 Ver Documento**](Ice/) |
-| 🛡️ **Library** | 🟡 Medio | [**📄 Ver Documento**](Library/) |
-| 🛡️ **Retro** | 🟡 Medio | [**📄 Ver Documento**](Retro/) |
-| 🛡️ **Revelant** | 🟡 Medio | [**📄 Ver Documento**](Revelant/) |
-| 🛡️ **Tech-Support 1** | 🟢 Fácil | [**📄 Ver Documento**](tech-support/) |
+| 🛡️ **Anthem** | 🟢 Fácil | [**📄 Ver Documento**](windows/Anthem/) |
+| 🛡️ **Blaster** | 🟢 Fácil | [**📄 Ver Documento**](windows/Blaster/) |
+| 🛡️ **Blue** | 🟢 Fácil | [**📄 Ver Documento**](windows/Blue/) |
+| 🛡️ **Ice** | 🟢 Fácil | [**📄 Ver Documento**](windows/Ice/) |
+| 🛡️ **Library** | 🟡 Medio | [**📄 Ver Documento**](linux/Library/) |
+| 🛡️ **Retro** | 🟡 Medio | [**📄 Ver Documento**](windows/Retro/) |
+| 🛡️ **Revelant** | 🟡 Medio | [**📄 Ver Documento**](windows/Revelant/) |
+| 🛡️ **Tech-Support 1** | 🟢 Fácil | [**📄 Ver Documento**](linux/tech-support/) |
