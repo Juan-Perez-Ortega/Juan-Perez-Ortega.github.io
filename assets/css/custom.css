@@ -23,7 +23,13 @@ header h1:before {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
+}
+
+.header-logo {
+  height: 50px;
+  width: 50px;
+  object-fit: contain;
 }
 
 .header-tagline {

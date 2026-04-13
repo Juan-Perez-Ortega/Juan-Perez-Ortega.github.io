@@ -15,10 +15,15 @@
     <header>
       <div class="container header-content">
         <div class="header-left">
-          <a id="a-title" href="{{ '/' | relative_url }}">
-            <h1>{{ site.title | default: site.github.repository_name }}</h1>
+          <a href="{{ '/' | relative_url }}">
+            <img class="header-logo" src="{{ '/imagenes/gengar.webp' | relative_url }}" alt="Logo">
           </a>
-          <p class="header-tagline">{{ site.tagline }}</p>
+          <div>
+            <a id="a-title" href="{{ '/' | relative_url }}">
+              <h1>{{ site.title | default: site.github.repository_name }}</h1>
+            </a>
+            <p class="header-tagline">{{ site.tagline }}</p>
+          </div>
         </div>
         <nav class="header-nav">
           <a href="{{ '/' | relative_url }}">Inicio</a>
