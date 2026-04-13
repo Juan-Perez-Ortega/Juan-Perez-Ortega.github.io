@@ -18,12 +18,10 @@
           <a href="{{ '/' | relative_url }}">
             <img class="header-logo" src="{{ '/imagenes/gengar.webp' | relative_url }}" alt="Logo">
           </a>
-          <div>
-            <a id="a-title" href="{{ '/' | relative_url }}">
-              <h1>{{ site.title | default: site.github.repository_name }}</h1>
-            </a>
-            <p class="header-tagline">{{ site.tagline }}</p>
-          </div>
+          <a id="a-title" href="{{ '/' | relative_url }}">
+            <h1>{{ site.title | default: site.github.repository_name }}</h1>
+          </a>
+          <p class="header-tagline">{{ site.tagline }}</p>
         </div>
         <nav class="header-nav">
           <a href="{{ '/' | relative_url }}">Inicio</a>
