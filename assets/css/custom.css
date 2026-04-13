@@ -73,19 +73,22 @@ a#a-title:hover h1 {
 
 .header-content {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  gap: 10px;
 }
 
 .header-left {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
 }
 
 .header-info {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
 }
 
@@ -153,6 +156,40 @@ a#a-title:hover h1 {
 
 .breadcrumbs .current {
   color: #7a6b99;
+}
+
+/* ============================================
+   INDEX FOLIO — Contenedor principal inicio
+   ============================================ */
+.index-folio {
+  background: #111118;
+  border: 1px solid rgba(160, 124, 240, 0.1);
+  border-radius: 14px;
+  padding: 36px 40px;
+  position: relative;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+}
+
+.index-folio::before {
+  content: 'GENGAR // ATTACK LAB';
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  color: rgba(160, 124, 240, 0.12);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.index-folio::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 40px;
+  right: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(160, 124, 240, 0.3), transparent);
 }
 
 /* ============================================
@@ -499,10 +536,10 @@ code {
 }
 
 .gengar-mascot img {
-  width: 72px;
-  height: 72px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
-  filter: drop-shadow(0 0 20px rgba(160, 124, 240, 0.5));
+  filter: drop-shadow(0 0 24px rgba(160, 124, 240, 0.5));
   opacity: 0.9;
 }
 
@@ -582,6 +619,8 @@ footer {
 
   .footer-content { flex-direction: column; gap: 10px; text-align: center; }
 
+  .index-folio { padding: 20px 16px; }
+
   .gengar-mascot { bottom: 12px; right: 12px; }
-  .gengar-mascot img { width: 56px; height: 56px; }
+  .gengar-mascot img { width: 72px; height: 72px; }
 }
