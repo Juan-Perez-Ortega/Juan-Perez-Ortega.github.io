@@ -4,6 +4,9 @@
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
     <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
     {% include head-custom.html %}
@@ -18,14 +21,20 @@
           <a href="{{ '/' | relative_url }}">
             <img class="header-logo" src="{{ '/imagenes/gengar.webp' | relative_url }}" alt="Logo">
           </a>
-          <a id="a-title" href="{{ '/' | relative_url }}">
-            <h1>{{ site.title | default: site.github.repository_name }}</h1>
-          </a>
-          <p class="header-tagline">{{ site.tagline }}</p>
+          <div class="header-info">
+            <a id="a-title" href="{{ '/' | relative_url }}">
+              <h1>{{ site.title | default: site.github.repository_name }}</h1>
+            </a>
+            <p class="header-tagline">{{ site.tagline }}</p>
+          </div>
         </div>
         <nav class="header-nav">
-          <a href="{{ '/' | relative_url }}">Inicio</a>
-          <a href="{{ site.github.repository_url }}" target="_blank">GitHub</a>
+          <a href="{{ '/' | relative_url }}">
+            <span class="nav-prompt">&gt;</span> Inicio
+          </a>
+          <a href="{{ site.github.repository_url }}" target="_blank">
+            <span class="nav-prompt">&gt;</span> GitHub
+          </a>
         </nav>
       </div>
     </header>
@@ -38,13 +47,18 @@
 
     <footer>
       <div class="container footer-content">
-        <p>&copy; {{ 'now' | date: "%Y" }} {{ site.social.name }}</p>
+        <p><span class="footer-prompt">$</span> &copy; {{ 'now' | date: "%Y" }} {{ site.social.name }}</p>
         <div class="footer-links">
           <a href="{{ site.github.repository_url }}" target="_blank">GitHub</a>
           <a href="https://tryhackme.com" target="_blank">TryHackMe</a>
         </div>
       </div>
     </footer>
+
+    <!-- Gengar mascota flotante -->
+    <div class="gengar-mascot">
+      <img src="{{ '/imagenes/gengar.webp' | relative_url }}" alt="Gengar">
+    </div>
 
   </body>
 </html>
