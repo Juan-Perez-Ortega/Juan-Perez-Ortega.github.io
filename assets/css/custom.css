@@ -1,6 +1,29 @@
+/* === Gengar color overrides === */
+/* Override theme green with Gengar purple */
+header h1,
+a#a-title h1 {
+  color: #a78bfa !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2),
+               0 0 5px rgba(167, 139, 250, 0.15),
+               0 0 10px rgba(167, 139, 250, 0.1) !important;
+}
+
+h1, h2, h3, h4 {
+  color: #c4b5fd;
+}
+
+a {
+  color: #a78bfa;
+}
+
+a:hover {
+  color: #c4b5fd;
+}
+
 /* Header */
 header {
-  border-bottom: 1px solid #333;
+  background: rgba(88, 28, 135, 0.15);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.2);
   padding: 15px 0;
   margin: 0 0 30px 0;
 }
@@ -33,7 +56,7 @@ header h1:before {
 }
 
 .header-tagline {
-  color: #666;
+  color: #7c6f9b;
   font-size: 14px;
   margin: 0;
 }
@@ -44,19 +67,19 @@ header h1:before {
 }
 
 .header-nav a {
-  color: #999;
+  color: #8b7faa;
   text-decoration: none;
   font-size: 14px;
   transition: color 0.2s;
 }
 
 .header-nav a:hover {
-  color: #b5e853;
+  color: #a78bfa;
 }
 
 /* Footer */
 footer {
-  border-top: 1px solid #333;
+  border-top: 1px solid rgba(167, 139, 250, 0.2);
   padding: 20px 0;
   margin-top: 40px;
 }
@@ -68,7 +91,7 @@ footer {
 }
 
 .footer-content p {
-  color: #666;
+  color: #7c6f9b;
   font-size: 13px;
   margin: 0;
 }
@@ -79,14 +102,14 @@ footer {
 }
 
 .footer-links a {
-  color: #666;
+  color: #7c6f9b;
   text-decoration: none;
   font-size: 13px;
   transition: color 0.2s;
 }
 
 .footer-links a:hover {
-  color: #b5e853;
+  color: #a78bfa;
 }
 
 /* Cards grid */
@@ -98,16 +121,17 @@ footer {
 }
 
 .card {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #333;
+  background: rgba(88, 28, 135, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.15);
   border-radius: 8px;
   overflow: hidden;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  border-color: #b5e853;
+  border-color: #a78bfa;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
 }
 
 .card a {
@@ -130,7 +154,7 @@ footer {
 .card-title {
   font-size: 16px;
   margin: 0 0 8px 0;
-  color: #b5e853;
+  color: #c4b5fd;
 }
 
 .card-category {
@@ -142,18 +166,18 @@ footer {
 }
 
 .card-category.windows {
-  background: #1a3a5c;
-  color: #5b9bd5;
+  background: rgba(96, 165, 250, 0.15);
+  color: #93bbfc;
 }
 
 .card-category.linux {
-  background: #3a1a1a;
-  color: #d55b5b;
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
 }
 
 .card-date {
   font-size: 12px;
-  color: #666;
+  color: #7c6f9b;
   margin: 0;
 }
 
@@ -164,9 +188,19 @@ footer {
 .card-tag {
   display: inline-block;
   font-size: 11px;
-  color: #999;
-  background: rgba(255, 255, 255, 0.05);
+  color: #8b7faa;
+  background: rgba(167, 139, 250, 0.08);
   padding: 1px 6px;
   border-radius: 3px;
   margin: 2px 2px 2px 0;
+}
+
+/* Code blocks */
+code {
+  background: rgba(88, 28, 135, 0.2);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+}
+
+pre {
+  border: 1px solid rgba(167, 139, 250, 0.2);
 }
