@@ -13,11 +13,17 @@
   <body>
 
     <header>
-      <div class="container">
-        <a id="a-title" href="{{ '/' | relative_url }}">
-          <h1>{{ site.title | default: site.github.repository_name }}</h1>
-        </a>
-        <a href="{{ site.github.repository_url }}" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+      <div class="container header-content">
+        <div class="header-left">
+          <a id="a-title" href="{{ '/' | relative_url }}">
+            <h1>{{ site.title | default: site.github.repository_name }}</h1>
+          </a>
+          <p class="header-tagline">{{ site.tagline }}</p>
+        </div>
+        <nav class="header-nav">
+          <a href="{{ '/' | relative_url }}">Inicio</a>
+          <a href="{{ site.github.repository_url }}" target="_blank">GitHub</a>
+        </nav>
       </div>
     </header>
 
@@ -26,5 +32,16 @@
         {{ content }}
       </section>
     </div>
+
+    <footer>
+      <div class="container footer-content">
+        <p>&copy; {{ 'now' | date: "%Y" }} {{ site.social.name }}</p>
+        <div class="footer-links">
+          <a href="{{ site.github.repository_url }}" target="_blank">GitHub</a>
+          <a href="https://tryhackme.com" target="_blank">TryHackMe</a>
+        </div>
+      </div>
+    </footer>
+
   </body>
 </html>
