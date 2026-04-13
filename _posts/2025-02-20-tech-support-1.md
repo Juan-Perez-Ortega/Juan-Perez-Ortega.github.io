@@ -3,7 +3,7 @@ title: "Tech-Support 1 - TryHackMe Writeup"
 date: 2025-02-20 10:00:00 +0100
 categories: [Linux, Easy]
 tags: [tryhackme, linux, subrion-cms, smb, rce, privilege-escalation]
-image: /linux/tech-support/image.png
+image: /imagenes/tech-support.png
 ---
 
 # Máquina TECH_SUPP0RT:1
