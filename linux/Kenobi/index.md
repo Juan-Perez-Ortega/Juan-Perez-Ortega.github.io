@@ -4,7 +4,7 @@ layout: default
 
 # Kenobi CTF
 
-![Kenobi CTF](/imagenes/DarthVadergif.gif)
+![Kenobi CTF](/imagenes/Kenobi.png)
 
 ---
 

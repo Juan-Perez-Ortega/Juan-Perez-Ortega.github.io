@@ -15,6 +15,11 @@ layout: default
 </nav>
 
 <!-- Folio de Investigación -->
-<article class="writeup-folio">
+<article class="writeup-folio{% if page.folio_image %} has-folio-image{% endif %}">
+  {% if page.folio_image %}
+  <div class="folio-corner-image">
+    <img src="{{ page.folio_image | relative_url }}" alt="{{ machine_name }}">
+  </div>
+  {% endif %}
   {{ content }}
 </article>

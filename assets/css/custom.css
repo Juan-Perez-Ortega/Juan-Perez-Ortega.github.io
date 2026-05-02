@@ -436,6 +436,30 @@ a#a-title:hover h1 {
   text-transform: uppercase;
 }
 
+.folio-corner-image {
+  position: absolute;
+  top: 36px;
+  right: 24px;
+  width: 160px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(160, 124, 240, 0.25);
+  box-shadow: 0 0 16px rgba(160, 124, 240, 0.1);
+}
+
+.folio-corner-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.has-folio-image h1 {
+  padding-right: 190px;
+}
+
 .writeup-folio h1 {
   font-family: 'Inter', sans-serif !important;
   font-size: 26px;
